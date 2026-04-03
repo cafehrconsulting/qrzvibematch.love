@@ -1,0 +1,836 @@
+{% extends "base.html" %}
+
+{% block title %}QRZ Vibe | Matches{% endblock %}
+
+{% block content %}
+{% set match_list = matches if matches is defined and matches else [] %}
+{% set like_list = likes if likes is defined and likes else [] %}
+{% set vibe_list = vibe_candidates if vibe_candidates is defined and vibe_candidates else [] %}
+
+<section class="qrz-2026-page matches-page">
+    <style>
+        .matches-page {
+            --qrz-bg-1: #07111f;
+            --qrz-bg-2: #0a1730;
+            --qrz-bg-3: #111f44;
+            --qrz-surface-1: rgba(255,255,255,0.10);
+            --qrz-surface-2: rgba(255,255,255,0.14);
+            --qrz-surface-3: rgba(255,255,255,0.18);
+            --qrz-border-1: rgba(255,255,255,0.18);
+            --qrz-border-2: rgba(255,255,255,0.28);
+            --qrz-text-1: #ffffff;
+            --qrz-text-2: rgba(255,255,255,0.84);
+            --qrz-text-3: rgba(255,255,255,0.66);
+            --qrz-pink: #ff4fd8;
+            --qrz-magenta: #ff5aa5;
+            --qrz-orange: #ff8b3d;
+            --qrz-gold: #ffd76a;
+            --qrz-cyan: #49dfff;
+            --qrz-violet: #8a6dff;
+            --qrz-success: #53f4b5;
+            --qrz-shadow-xl: 0 22px 60px rgba(0, 0, 0, 0.28);
+            --qrz-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.24);
+            --qrz-shadow-md: 0 10px 24px rgba(0, 0, 0, 0.18);
+            --qrz-radius-xl: 32px;
+            --qrz-radius-lg: 24px;
+            --qrz-radius-md: 18px;
+            position: relative;
+            padding: 34px 0 56px;
+            color: var(--qrz-text-1);
+        }
+
+        .matches-page * {
+            box-sizing: border-box;
+        }
+
+        .matches-shell {
+            width: min(1440px, calc(100% - 36px));
+            margin: 0 auto;
+            display: grid;
+            gap: 24px;
+        }
+
+        .matches-hero {
+            position: relative;
+            overflow: hidden;
+            padding: 28px 28px 30px;
+            border-radius: var(--qrz-radius-xl);
+            background:
+                radial-gradient(circle at 12% 18%, rgba(255, 79, 216, 0.26), transparent 28%),
+                radial-gradient(circle at 88% 18%, rgba(73, 223, 255, 0.22), transparent 26%),
+                radial-gradient(circle at 50% 100%, rgba(255, 139, 61, 0.16), transparent 30%),
+                linear-gradient(135deg, rgba(12, 22, 46, 0.98), rgba(16, 28, 62, 0.95), rgba(28, 16, 66, 0.92));
+            border: 1px solid var(--qrz-border-1);
+            box-shadow: var(--qrz-shadow-xl);
+        }
+
+        .matches-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.07), transparent 45%, rgba(255,255,255,0.04)),
+                repeating-linear-gradient(
+                    120deg,
+                    rgba(255,255,255,0.03) 0px,
+                    rgba(255,255,255,0.03) 1px,
+                    transparent 1px,
+                    transparent 24px
+                );
+            pointer-events: none;
+        }
+
+        .matches-hero-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.35fr 0.95fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .matches-hero-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .matches-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.08);
+            color: var(--qrz-text-2);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            backdrop-filter: blur(16px);
+        }
+
+        .matches-kicker-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--qrz-gold), var(--qrz-pink));
+            box-shadow: 0 0 0 4px rgba(255, 79, 216, 0.16);
+        }
+
+        .matches-title {
+            margin: 0;
+            font-size: clamp(2rem, 3vw, 3.2rem);
+            font-weight: 900;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+            text-shadow: 0 4px 24px rgba(255, 79, 216, 0.20);
+        }
+
+        .matches-title .accent {
+            background: linear-gradient(90deg, #ffffff 0%, #ffd76a 18%, #ff8b3d 40%, #ff4fd8 64%, #7d8dff 86%, #49dfff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .matches-subtitle {
+            max-width: 820px;
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.75;
+            color: var(--qrz-text-2);
+        }
+
+        .matches-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .matches-stat {
+            position: relative;
+            overflow: hidden;
+            padding: 18px 18px 16px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+            backdrop-filter: blur(18px);
+            box-shadow: var(--qrz-shadow-md);
+        }
+
+        .matches-stat::after {
+            content: "";
+            position: absolute;
+            inset: auto -30px -30px auto;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.16), transparent 70%);
+        }
+
+        .matches-stat-label {
+            position: relative;
+            z-index: 1;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--qrz-text-3);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.10em;
+            font-weight: 800;
+        }
+
+        .matches-stat-value {
+            position: relative;
+            z-index: 1;
+            display: block;
+            font-size: clamp(1.7rem, 2.3vw, 2.35rem);
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+        }
+
+        .matches-stat-note {
+            position: relative;
+            z-index: 1;
+            display: block;
+            margin-top: 8px;
+            font-size: 0.92rem;
+            color: var(--qrz-text-2);
+        }
+
+        .matches-body-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+        }
+
+        .premium-panel {
+            position: relative;
+            overflow: hidden;
+            padding: 24px;
+            border-radius: var(--qrz-radius-lg);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.07));
+            border: 1px solid var(--qrz-border-1);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--qrz-shadow-lg);
+        }
+
+        .premium-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 38%, rgba(255,255,255,0.02));
+        }
+
+        .panel-header {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .panel-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .panel-eyebrow {
+            color: var(--qrz-text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.4rem;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .panel-subtitle {
+            margin: 0;
+            color: var(--qrz-text-2);
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .panel-pill {
+            align-self: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.14);
+            font-weight: 800;
+            font-size: 0.86rem;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .match-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .match-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 26px;
+            min-height: 355px;
+            display: flex;
+            align-items: flex-end;
+            padding: 22px;
+            background:
+                linear-gradient(180deg, rgba(9, 16, 34, 0.12), rgba(9, 16, 34, 0.84)),
+                radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 32%),
+                linear-gradient(135deg, rgba(255,79,216,0.46), rgba(73,223,255,0.34), rgba(138,109,255,0.42));
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: var(--qrz-shadow-lg);
+            isolation: isolate;
+        }
+
+        .match-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 18% 16%, rgba(255,255,255,0.18), transparent 22%),
+                radial-gradient(circle at 82% 18%, rgba(255,215,106,0.20), transparent 18%),
+                linear-gradient(180deg, transparent 24%, rgba(0,0,0,0.56) 72%, rgba(0,0,0,0.82));
+            z-index: -1;
+        }
+
+        .match-card-content {
+            width: 100%;
+            display: grid;
+            gap: 14px;
+        }
+
+        .match-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .match-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.16);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 800;
+            backdrop-filter: blur(12px);
+        }
+
+        .match-main {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .match-name-wrap {
+            min-width: 0;
+        }
+
+        .match-name {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 900;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+        }
+
+        .match-meta {
+            margin-top: 7px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 10px;
+            color: rgba(255,255,255,0.84);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .match-score {
+            flex-shrink: 0;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.18);
+            text-align: center;
+            min-width: 82px;
+            backdrop-filter: blur(12px);
+        }
+
+        .match-score-label {
+            display: block;
+            color: rgba(255,255,255,0.76);
+            font-size: 0.72rem;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .match-score-value {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .match-bio {
+            margin: 0;
+            color: rgba(255,255,255,0.88);
+            font-size: 0.97rem;
+            line-height: 1.65;
+        }
+
+        .match-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .qrz-button {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            min-height: 50px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 0.01em;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+            cursor: pointer;
+        }
+
+        .qrz-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .qrz-button-primary {
+            color: #0a1020;
+            background: linear-gradient(135deg, #ffd76a, #ff8b3d 38%, #ff4fd8 72%, #8a6dff 100%);
+        }
+
+        .qrz-button-secondary {
+            color: #ffffff;
+            background: rgba(255,255,255,0.10);
+            border-color: rgba(255,255,255,0.14);
+            backdrop-filter: blur(12px);
+        }
+
+        .qrz-button-ghost {
+            color: #ffffff;
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.12);
+        }
+
+        .mini-stack {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 16px;
+        }
+
+        .mini-card {
+            padding: 18px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: var(--qrz-shadow-md);
+            display: grid;
+            gap: 12px;
+        }
+
+        .mini-card-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mini-title {
+            margin: 0;
+            font-size: 1.02rem;
+            line-height: 1.1;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .mini-meta {
+            color: var(--qrz-text-3);
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .mini-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .mini-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .mini-row-main {
+            min-width: 0;
+        }
+
+        .mini-row-name {
+            margin: 0 0 4px;
+            color: #ffffff;
+            font-size: 0.96rem;
+            font-weight: 800;
+        }
+
+        .mini-row-sub {
+            color: var(--qrz-text-3);
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
+
+        .mini-chip {
+            padding: 8px 11px;
+            border-radius: 999px;
+            color: #ffffff;
+            font-size: 0.74rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, rgba(255,79,216,0.86), rgba(138,109,255,0.88));
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            position: relative;
+            z-index: 1;
+            padding: 36px 20px;
+            border-radius: 22px;
+            border: 1px dashed rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.06);
+            text-align: center;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+        }
+
+        .empty-state p {
+            margin: 0 auto 18px;
+            max-width: 560px;
+            color: var(--qrz-text-2);
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1180px) {
+            .matches-hero-grid,
+            .matches-body-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .match-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 780px) {
+            .matches-shell {
+                width: min(100%, calc(100% - 20px));
+            }
+
+            .matches-hero,
+            .premium-panel {
+                padding: 20px;
+                border-radius: 24px;
+            }
+
+            .matches-stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .match-main {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .match-score {
+                min-width: 0;
+                width: 100%;
+                text-align: left;
+            }
+
+            .match-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="matches-shell">
+        <section class="matches-hero">
+            <div class="matches-hero-grid">
+                <div class="matches-hero-copy">
+                    <span class="matches-kicker">
+                        <span class="matches-kicker-dot"></span>
+                        2026 Premium Match Discovery
+                    </span>
+
+                    <h1 class="matches-title">
+                        Your <span class="accent">best vibes</span>, all in one clean and modern space
+                    </h1>
+
+                    <p class="matches-subtitle">
+                        Explore stronger compatibility, more attractive presentation, and a brighter product-style experience.
+                        This layout is designed to feel like a premium dating platform instead of an old editorial page.
+                    </p>
+                </div>
+
+                <div class="matches-stat-grid">
+                    <div class="matches-stat">
+                        <span class="matches-stat-label">Mutual Matches</span>
+                        <span class="matches-stat-value">{{ match_list|length }}</span>
+                        <span class="matches-stat-note">Profiles with shared interest and stronger compatibility.</span>
+                    </div>
+
+                    <div class="matches-stat">
+                        <span class="matches-stat-label">New Likes</span>
+                        <span class="matches-stat-value">{{ like_list|length }}</span>
+                        <span class="matches-stat-note">People already showing interest in your profile.</span>
+                    </div>
+
+                    <div class="matches-stat">
+                        <span class="matches-stat-label">Vibe Suggestions</span>
+                        <span class="matches-stat-value">{{ vibe_list|length }}</span>
+                        <span class="matches-stat-note">AI-assisted recommendations tuned for chemistry and energy.</span>
+                    </div>
+
+                    <div class="matches-stat">
+                        <span class="matches-stat-label">Experience Mode</span>
+                        <span class="matches-stat-value">2026</span>
+                        <span class="matches-stat-note">Clean surfaces, stronger hierarchy, brighter gradients, premium feel.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="matches-body-grid">
+            <section class="premium-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="panel-eyebrow">Main Match Feed</span>
+                        <h2 class="panel-title">Top mutual connections</h2>
+                        <p class="panel-subtitle">
+                            A brighter, cleaner presentation for your strongest possible connections.
+                        </p>
+                    </div>
+                    <span class="panel-pill">{{ match_list|length }} total</span>
+                </div>
+
+                {% if match_list %}
+                    <div class="match-grid">
+                        {% for match in match_list %}
+                            {% set profile = match.profile if match.profile is defined else match %}
+                            {% set display_name = profile.display_name if profile.display_name is defined and profile.display_name else (profile.name if profile.name is defined and profile.name else "QRZ Member") %}
+                            {% set display_age = profile.age if profile.age is defined and profile.age else "—" %}
+                            {% set display_city = profile.city if profile.city is defined and profile.city else (profile.location if profile.location is defined and profile.location else "Location hidden") %}
+                            {% set display_bio = profile.bio if profile.bio is defined and profile.bio else "A vibrant profile ready for a stronger connection and a more meaningful conversation." %}
+                            {% set compatibility = match.compatibility if match.compatibility is defined and match.compatibility else (profile.compatibility if profile.compatibility is defined and profile.compatibility else "92%") %}
+                            {% set zodiac = profile.zodiac if profile.zodiac is defined and profile.zodiac else "Strong vibe" %}
+                            {% set profession = profile.profession if profile.profession is defined and profile.profession else "Interesting energy" %}
+
+                            <article class="match-card">
+                                <div class="match-card-content">
+                                    <div class="match-badges">
+                                        <span class="match-badge">✨ Mutual Match</span>
+                                        <span class="match-badge">💖 {{ zodiac }}</span>
+                                        <span class="match-badge">🎯 {{ profession }}</span>
+                                    </div>
+
+                                    <div class="match-main">
+                                        <div class="match-name-wrap">
+                                            <h3 class="match-name">{{ display_name }}</h3>
+                                            <div class="match-meta">
+                                                <span>{{ display_age }}</span>
+                                                <span>•</span>
+                                                <span>{{ display_city }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="match-score">
+                                            <span class="match-score-label">Vibe Score</span>
+                                            <span class="match-score-value">{{ compatibility }}</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="match-bio">{{ display_bio }}</p>
+
+                                    <div class="match-actions">
+                                        {% if match.chat_url is defined and match.chat_url %}
+                                            <a href="{{ match.chat_url }}" class="qrz-button qrz-button-primary">Start Chat</a>
+                                        {% elif profile.chat_url is defined and profile.chat_url %}
+                                            <a href="{{ profile.chat_url }}" class="qrz-button qrz-button-primary">Start Chat</a>
+                                        {% else %}
+                                            <a href="/chat" class="qrz-button qrz-button-primary">Start Chat</a>
+                                        {% endif %}
+
+                                        {% if match.profile_url is defined and match.profile_url %}
+                                            <a href="{{ match.profile_url }}" class="qrz-button qrz-button-secondary">View Profile</a>
+                                        {% elif profile.profile_url is defined and profile.profile_url %}
+                                            <a href="{{ profile.profile_url }}" class="qrz-button qrz-button-secondary">View Profile</a>
+                                        {% else %}
+                                            <a href="/profile" class="qrz-button qrz-button-secondary">View Profile</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <h3>No mutual matches yet</h3>
+                        <p>
+                            Your visual system is now ready for a more premium experience. As soon as your matching feed is populated,
+                            this page will present connections with a brighter and more attractive product-style layout.
+                        </p>
+                        <a href="/dashboard" class="qrz-button qrz-button-primary" style="max-width: 240px; margin: 0 auto;">Go to Dashboard</a>
+                    </div>
+                {% endif %}
+            </section>
+
+            <aside class="premium-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="panel-eyebrow">Side Intelligence</span>
+                        <h2 class="panel-title">Fresh attention around you</h2>
+                        <p class="panel-subtitle">
+                            Quick highlights and lighter side panels designed to feel modern, clean, and premium.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mini-stack">
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <h3 class="mini-title">Recent likes</h3>
+                            <span class="mini-meta">{{ like_list|length }} waiting</span>
+                        </div>
+
+                        {% if like_list %}
+                            <div class="mini-list">
+                                {% for item in like_list[:5] %}
+                                    {% set item_name = item.display_name if item.display_name is defined and item.display_name else (item.name if item.name is defined and item.name else "QRZ Member") %}
+                                    {% set item_note = item.city if item.city is defined and item.city else (item.note if item.note is defined and item.note else "Interested in your vibe") %}
+                                    <div class="mini-row">
+                                        <div class="mini-row-main">
+                                            <p class="mini-row-name">{{ item_name }}</p>
+                                            <div class="mini-row-sub">{{ item_note }}</div>
+                                        </div>
+                                        <span class="mini-chip">Like</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="mini-row">
+                                <div class="mini-row-main">
+                                    <p class="mini-row-name">No likes yet</p>
+                                    <div class="mini-row-sub">New likes will appear here with a brighter premium presentation.</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <h3 class="mini-title">Vibe suggestions</h3>
+                            <span class="mini-meta">{{ vibe_list|length }} suggestions</span>
+                        </div>
+
+                        {% if vibe_list %}
+                            <div class="mini-list">
+                                {% for item in vibe_list[:5] %}
+                                    {% set suggestion_name = item.display_name if item.display_name is defined and item.display_name else (item.name if item.name is defined and item.name else "Suggested Profile") %}
+                                    {% set suggestion_note = item.reason if item.reason is defined and item.reason else (item.city if item.city is defined and item.city else "Potential chemistry match") %}
+                                    <div class="mini-row">
+                                        <div class="mini-row-main">
+                                            <p class="mini-row-name">{{ suggestion_name }}</p>
+                                            <div class="mini-row-sub">{{ suggestion_note }}</div>
+                                        </div>
+                                        <span class="mini-chip">Vibe</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="mini-row">
+                                <div class="mini-row-main">
+                                    <p class="mini-row-name">Suggestions coming soon</p>
+                                    <div class="mini-row-sub">As recommendation data is added, this panel will stay aligned with the same visual system.</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <h3 class="mini-title">Experience refresh</h3>
+                            <span class="mini-meta">Visual reset applied</span>
+                        </div>
+                        <div class="mini-row">
+                            <div class="mini-row-main">
+                                <p class="mini-row-name">Cleaner UI direction</p>
+                                <div class="mini-row-sub">
+                                    Stronger gradients, brighter surfaces, better hierarchy, more modern typography, and no editorial/newspaper feel.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </div>
+</section>
+{% endblock %}

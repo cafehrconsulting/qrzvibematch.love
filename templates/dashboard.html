@@ -1,0 +1,1164 @@
+{% extends "base.html" %}
+
+{% block title %}QRZ Vibe | Dashboard{% endblock %}
+
+{% block content %}
+{% set stats = dashboard_stats if dashboard_stats is defined and dashboard_stats else {} %}
+{% set featured_matches = matches if matches is defined and matches else [] %}
+{% set recent_messages = messages if messages is defined and messages else [] %}
+{% set gift_items = gifts if gifts is defined and gifts else [] %}
+{% set spotlight_profiles = spotlight if spotlight is defined and spotlight else [] %}
+
+<section class="qrz-dashboard-2026">
+    <style>
+        .qrz-dashboard-2026 {
+            --qrz-bg-1: #030611;
+            --qrz-bg-2: #081125;
+            --qrz-bg-3: #0b1733;
+            --qrz-surface-1: rgba(255,255,255,0.08);
+            --qrz-surface-2: rgba(255,255,255,0.12);
+            --qrz-surface-3: rgba(255,255,255,0.16);
+            --qrz-border-1: rgba(255,255,255,0.12);
+            --qrz-border-2: rgba(255,255,255,0.18);
+            --qrz-text-1: #ffffff;
+            --qrz-text-2: rgba(255,255,255,0.82);
+            --qrz-text-3: rgba(255,255,255,0.60);
+            --qrz-pink: #ff3ec9;
+            --qrz-magenta: #ff4fd8;
+            --qrz-orange: #ff8b3d;
+            --qrz-gold: #ffd76a;
+            --qrz-cyan: #49dfff;
+            --qrz-violet: #7a6cff;
+            --qrz-success: #4cf4b6;
+            --qrz-danger: #ff6b81;
+            --qrz-shadow-xl: 0 30px 80px rgba(0,0,0,0.36);
+            --qrz-shadow-lg: 0 20px 48px rgba(0,0,0,0.28);
+            --qrz-shadow-md: 0 12px 26px rgba(0,0,0,0.22);
+            --qrz-radius-xl: 34px;
+            --qrz-radius-lg: 24px;
+            --qrz-radius-md: 18px;
+            color: var(--qrz-text-1);
+            padding: 12px 0 48px;
+        }
+
+        .qrz-dashboard-2026 * {
+            box-sizing: border-box;
+        }
+
+        .dashboard-shell {
+            display: grid;
+            gap: 24px;
+        }
+
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--qrz-radius-xl);
+            background:
+                radial-gradient(circle at 10% 22%, rgba(255, 62, 201, 0.24), transparent 22%),
+                radial-gradient(circle at 88% 16%, rgba(73, 223, 255, 0.20), transparent 22%),
+                radial-gradient(circle at 50% 100%, rgba(255, 139, 61, 0.18), transparent 28%),
+                linear-gradient(135deg, rgba(7, 12, 27, 0.98), rgba(11, 20, 45, 0.96), rgba(19, 12, 48, 0.94));
+            border: 1px solid var(--qrz-border-1);
+            box-shadow: var(--qrz-shadow-xl);
+            padding: 32px;
+        }
+
+        .hero-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.06), transparent 40%, rgba(255,255,255,0.02)),
+                repeating-linear-gradient(
+                    125deg,
+                    rgba(255,255,255,0.02) 0px,
+                    rgba(255,255,255,0.02) 1px,
+                    transparent 1px,
+                    transparent 28px
+                );
+        }
+
+        .hero-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .hero-copy {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: var(--qrz-text-2);
+            font-size: 0.80rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 800;
+            backdrop-filter: blur(12px);
+        }
+
+        .hero-kicker-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--qrz-gold), var(--qrz-pink));
+            box-shadow: 0 0 0 4px rgba(255, 79, 216, 0.14);
+        }
+
+        .hero-title {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 4.25rem);
+            line-height: 0.96;
+            letter-spacing: -0.055em;
+            font-weight: 900;
+            color: #ffffff;
+            text-wrap: balance;
+        }
+
+        .hero-title .accent {
+            background: linear-gradient(
+                90deg,
+                #ffffff 0%,
+                #ffe27f 14%,
+                #ffb357 30%,
+                #ff4fd8 56%,
+                #8f7cff 80%,
+                #49dfff 100%
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow:
+                0 0 24px rgba(255, 79, 216, 0.16),
+                0 0 32px rgba(73, 223, 255, 0.10);
+        }
+
+        .hero-subtitle {
+            margin: 0;
+            max-width: 780px;
+            color: var(--qrz-text-2);
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 4px;
+        }
+
+        .qrz-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 54px;
+            padding: 0 20px;
+            border-radius: 18px;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 900;
+            letter-spacing: 0.01em;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.16);
+        }
+
+        .qrz-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .qrz-btn-primary {
+            color: #07111f;
+            background: linear-gradient(135deg, #ffd76a 0%, #ff8b3d 30%, #ff4fd8 68%, #7a6cff 100%);
+        }
+
+        .qrz-btn-secondary {
+            color: #ffffff;
+            background: rgba(255,255,255,0.09);
+            border-color: rgba(255,255,255,0.14);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 14px;
+        }
+
+        .hero-mini-card {
+            position: relative;
+            overflow: hidden;
+            padding: 18px 18px 16px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.07));
+            border: 1px solid rgba(255,255,255,0.14);
+            backdrop-filter: blur(18px);
+            box-shadow: var(--qrz-shadow-md);
+        }
+
+        .hero-mini-card::after {
+            content: "";
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.16), transparent 70%);
+        }
+
+        .hero-mini-label {
+            position: relative;
+            z-index: 1;
+            display: block;
+            color: var(--qrz-text-3);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .hero-mini-value {
+            position: relative;
+            z-index: 1;
+            display: block;
+            font-size: clamp(1.7rem, 2vw, 2.3rem);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+        }
+
+        .hero-mini-note {
+            position: relative;
+            z-index: 1;
+            display: block;
+            margin-top: 8px;
+            color: var(--qrz-text-2);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .glass-stat {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.06));
+            border: 1px solid var(--qrz-border-1);
+            backdrop-filter: blur(18px);
+            box-shadow: var(--qrz-shadow-lg);
+            padding: 20px;
+        }
+
+        .glass-stat::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent 36%, rgba(255,255,255,0.01));
+        }
+
+        .glass-stat-label {
+            position: relative;
+            z-index: 1;
+            display: block;
+            color: var(--qrz-text-3);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .glass-stat-value {
+            position: relative;
+            z-index: 1;
+            display: block;
+            color: #ffffff;
+            font-size: clamp(1.8rem, 2vw, 2.5rem);
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+
+        .glass-stat-note {
+            position: relative;
+            z-index: 1;
+            margin-top: 10px;
+            color: var(--qrz-text-2);
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+
+        .dashboard-main-grid {
+            display: grid;
+            grid-template-columns: 1.08fr 0.92fr;
+            gap: 24px;
+        }
+
+        .dashboard-stack {
+            display: grid;
+            gap: 24px;
+        }
+
+        .panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--qrz-radius-lg);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.06));
+            border: 1px solid var(--qrz-border-1);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--qrz-shadow-lg);
+            padding: 24px;
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent 36%, rgba(255,255,255,0.02));
+        }
+
+        .panel-header {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .panel-title-wrap {
+            display: grid;
+            gap: 6px;
+        }
+
+        .panel-eyebrow {
+            color: var(--qrz-text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .panel-title {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.45rem;
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            font-weight: 900;
+        }
+
+        .panel-subtitle {
+            margin: 0;
+            color: var(--qrz-text-2);
+            font-size: 0.96rem;
+            line-height: 1.65;
+        }
+
+        .panel-pill {
+            align-self: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.09);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .featured-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .featured-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 320px;
+            display: flex;
+            align-items: flex-end;
+            border-radius: 26px;
+            padding: 20px;
+            background:
+                linear-gradient(180deg, rgba(8, 12, 25, 0.10), rgba(8, 12, 25, 0.84)),
+                linear-gradient(135deg, rgba(255,79,216,0.40), rgba(73,223,255,0.26), rgba(122,108,255,0.34));
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: var(--qrz-shadow-md);
+            isolation: isolate;
+        }
+
+        .featured-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 22% 18%, rgba(255,255,255,0.18), transparent 18%),
+                radial-gradient(circle at 82% 18%, rgba(255,215,106,0.18), transparent 16%),
+                linear-gradient(180deg, transparent 22%, rgba(0,0,0,0.36) 60%, rgba(0,0,0,0.76) 100%);
+            z-index: -1;
+        }
+
+        .featured-content {
+            width: 100%;
+            display: grid;
+            gap: 12px;
+        }
+
+        .featured-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .featured-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.16);
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 800;
+            backdrop-filter: blur(12px);
+        }
+
+        .featured-name-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .featured-name {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.55rem;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            font-weight: 900;
+        }
+
+        .featured-meta {
+            margin-top: 7px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 10px;
+            color: rgba(255,255,255,0.84);
+            font-size: 0.93rem;
+            font-weight: 700;
+        }
+
+        .featured-score {
+            flex-shrink: 0;
+            min-width: 82px;
+            padding: 12px 12px 10px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.16);
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .featured-score-label {
+            display: block;
+            color: rgba(255,255,255,0.70);
+            font-size: 0.70rem;
+            text-transform: uppercase;
+            letter-spacing: 0.11em;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .featured-score-value {
+            display: block;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 900;
+        }
+
+        .featured-bio {
+            margin: 0;
+            color: rgba(255,255,255,0.88);
+            font-size: 0.96rem;
+            line-height: 1.65;
+        }
+
+        .featured-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .mini-list {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 14px;
+        }
+
+        .mini-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 14px;
+            align-items: center;
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.10);
+            box-shadow: var(--qrz-shadow-md);
+        }
+
+        .mini-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 900;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.30), transparent 22%),
+                linear-gradient(135deg, #ff4fd8 0%, #7a6cff 55%, #49dfff 100%);
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+        }
+
+        .mini-main {
+            min-width: 0;
+        }
+
+        .mini-name {
+            margin: 0 0 5px;
+            color: #ffffff;
+            font-size: 0.98rem;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            font-weight: 900;
+        }
+
+        .mini-sub {
+            color: var(--qrz-text-3);
+            font-size: 0.86rem;
+            line-height: 1.45;
+        }
+
+        .mini-side {
+            text-align: right;
+        }
+
+        .mini-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(255,79,216,0.90), rgba(122,108,255,0.88));
+            color: #ffffff;
+            font-size: 0.74rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .gift-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .gift-card {
+            padding: 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.10);
+            box-shadow: var(--qrz-shadow-md);
+            display: grid;
+            gap: 10px;
+        }
+
+        .gift-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .gift-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, rgba(255,215,106,0.26), rgba(255,79,216,0.18), rgba(73,223,255,0.16));
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .gift-price {
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .gift-name {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .gift-note {
+            margin: 0;
+            color: var(--qrz-text-2);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .spotlight-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 12px;
+        }
+
+        .spotlight-card {
+            display: grid;
+            grid-template-columns: 66px 1fr auto;
+            gap: 14px;
+            align-items: center;
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.10);
+            box-shadow: var(--qrz-shadow-md);
+        }
+
+        .spotlight-orb {
+            width: 66px;
+            height: 66px;
+            border-radius: 22px;
+            display: grid;
+            place-items: center;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #ffffff;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.30), transparent 20%),
+                linear-gradient(135deg, #ff4fd8 0%, #ff8b3d 45%, #49dfff 100%);
+            border: 1px solid rgba(255,255,255,0.14);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.16);
+        }
+
+        .spotlight-name {
+            margin: 0 0 5px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .spotlight-sub {
+            color: var(--qrz-text-3);
+            font-size: 0.88rem;
+            line-height: 1.45;
+        }
+
+        .spotlight-score {
+            min-width: 74px;
+            text-align: center;
+            padding: 10px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+        .empty-state {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 34px 20px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.06);
+            border: 1px dashed rgba(255,255,255,0.16);
+        }
+
+        .empty-state h3 {
+            margin: 0 0 10px;
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+        }
+
+        .empty-state p {
+            margin: 0 auto;
+            max-width: 640px;
+            color: var(--qrz-text-2);
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1220px) {
+            .hero-grid,
+            .dashboard-main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 860px) {
+            .hero-panel,
+            .panel {
+                padding: 20px;
+                border-radius: 24px;
+            }
+
+            .featured-grid,
+            .gift-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-name-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .featured-score {
+                width: 100%;
+                text-align: left;
+            }
+
+            .spotlight-card,
+            .mini-item {
+                grid-template-columns: auto 1fr;
+            }
+
+            .spotlight-score,
+            .mini-side {
+                grid-column: 2 / 3;
+                justify-self: start;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-title {
+                font-size: clamp(2rem, 11vw, 3rem);
+            }
+
+            .hero-actions {
+                flex-direction: column;
+            }
+
+            .qrz-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <div class="dashboard-shell">
+        <section class="hero-panel">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <span class="hero-kicker">
+                        <span class="hero-kicker-dot"></span>
+                        2026 Premium Dating Experience
+                    </span>
+
+                    <h1 class="hero-title">
+                        Find brighter chemistry with a more <span class="accent">alive, modern, premium vibe</span>
+                    </h1>
+
+                    <p class="hero-subtitle">
+                        QRZ Vibe now moves away from flat editorial styling into a cleaner product-style experience with stronger gradients,
+                        deeper contrast, premium surfaces, and a more attractive emotional first impression for customers.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="{{ url_for('matches') }}" class="qrz-btn qrz-btn-primary">Discover Matches</a>
+                        <a href="{{ url_for('chat') }}" class="qrz-btn qrz-btn-secondary">Open Messages</a>
+                    </div>
+                </div>
+
+                <div class="hero-side">
+                    <div class="hero-mini-card">
+                        <span class="hero-mini-label">Today’s Match Energy</span>
+                        <span class="hero-mini-value">{{ stats.match_score if stats.match_score is defined and stats.match_score else "94%" }}</span>
+                        <span class="hero-mini-note">A stronger premium first impression and more dynamic visual chemistry.</span>
+                    </div>
+
+                    <div class="hero-mini-card">
+                        <span class="hero-mini-label">Unread Messages</span>
+                        <span class="hero-mini-value">{{ stats.unread_messages if stats.unread_messages is defined and stats.unread_messages is not none else recent_messages|length }}</span>
+                        <span class="hero-mini-note">Conversations stay cleaner and easier to scan with brighter interaction panels.</span>
+                    </div>
+
+                    <div class="hero-mini-card">
+                        <span class="hero-mini-label">Gift Momentum</span>
+                        <span class="hero-mini-value">{{ stats.gifts_sent if stats.gifts_sent is defined and stats.gifts_sent is not none else gift_items|length }}</span>
+                        <span class="hero-mini-note">Virtual gifting can now become part of a premium monetization flow.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="glass-stat">
+                <span class="glass-stat-label">Matches</span>
+                <span class="glass-stat-value">{{ stats.matches if stats.matches is defined and stats.matches is not none else featured_matches|length }}</span>
+                <div class="glass-stat-note">Profiles with the strongest potential connection and premium visual presentation.</div>
+            </article>
+
+            <article class="glass-stat">
+                <span class="glass-stat-label">Messages</span>
+                <span class="glass-stat-value">{{ stats.messages if stats.messages is defined and stats.messages is not none else recent_messages|length }}</span>
+                <div class="glass-stat-note">Cleaner message visibility, brighter cards, and stronger hierarchy throughout the app.</div>
+            </article>
+
+            <article class="glass-stat">
+                <span class="glass-stat-label">Profile Views</span>
+                <span class="glass-stat-value">{{ stats.profile_views if stats.profile_views is defined and stats.profile_views is not none else "128" }}</span>
+                <div class="glass-stat-note">Designed to turn profile browsing into a more attractive and premium experience.</div>
+            </article>
+
+            <article class="glass-stat">
+                <span class="glass-stat-label">Vibe Points</span>
+                <span class="glass-stat-value">{{ stats.vibe_points if stats.vibe_points is defined and stats.vibe_points is not none else "2,480" }}</span>
+                <div class="glass-stat-note">A future-ready base for likes, gifts, rewards, status, and membership conversion.</div>
+            </article>
+        </section>
+
+        <section class="dashboard-main-grid">
+            <div class="dashboard-stack">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <span class="panel-eyebrow">Featured Profiles</span>
+                            <h2 class="panel-title">Best connections right now</h2>
+                            <p class="panel-subtitle">
+                                Stronger gradients, better hierarchy, and a more premium product look for your main discovery area.
+                            </p>
+                        </div>
+                        <span class="panel-pill">{{ featured_matches|length }} live</span>
+                    </div>
+
+                    {% if featured_matches %}
+                        <div class="featured-grid">
+                            {% for match in featured_matches[:4] %}
+                                {% set profile = match.profile if match.profile is defined else match %}
+                                {% set profile_name = profile.display_name if profile.display_name is defined and profile.display_name else (profile.name if profile.name is defined and profile.name else "QRZ Member") %}
+                                {% set profile_age = profile.age if profile.age is defined and profile.age else "—" %}
+                                {% set profile_city = profile.city if profile.city is defined and profile.city else (profile.location if profile.location is defined and profile.location else "Hidden location") %}
+                                {% set profile_bio = profile.bio if profile.bio is defined and profile.bio else "An attractive connection with strong chemistry potential and a cleaner premium presentation." %}
+                                {% set profile_zodiac = profile.zodiac if profile.zodiac is defined and profile.zodiac else "Great vibe" %}
+                                {% set profile_profession = profile.profession if profile.profession is defined and profile.profession else "Interesting energy" %}
+                                {% set profile_score = match.compatibility if match.compatibility is defined and match.compatibility else (profile.compatibility if profile.compatibility is defined and profile.compatibility else "92%") %}
+
+                                <article class="featured-card">
+                                    <div class="featured-content">
+                                        <div class="featured-tags">
+                                            <span class="featured-tag">✨ Match</span>
+                                            <span class="featured-tag">💖 {{ profile_zodiac }}</span>
+                                            <span class="featured-tag">🎯 {{ profile_profession }}</span>
+                                        </div>
+
+                                        <div class="featured-name-row">
+                                            <div>
+                                                <h3 class="featured-name">{{ profile_name }}</h3>
+                                                <div class="featured-meta">
+                                                    <span>{{ profile_age }}</span>
+                                                    <span>•</span>
+                                                    <span>{{ profile_city }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="featured-score">
+                                                <span class="featured-score-label">Vibe Score</span>
+                                                <span class="featured-score-value">{{ profile_score }}</span>
+                                            </div>
+                                        </div>
+
+                                        <p class="featured-bio">{{ profile_bio }}</p>
+
+                                        <div class="featured-actions">
+                                            <a href="{{ profile.chat_url if profile.chat_url is defined and profile.chat_url else url_for('chat') }}" class="qrz-btn qrz-btn-primary">Start Chat</a>
+                                            <a href="{{ profile.profile_url if profile.profile_url is defined and profile.profile_url else url_for('profile') }}" class="qrz-btn qrz-btn-secondary">View Profile</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <h3>No featured matches loaded yet</h3>
+                            <p>
+                                This landing dashboard is now visually ready for a premium customer-facing experience. Once your real matching data is connected,
+                                your strongest profiles will display here with the same brighter 2026 styling.
+                            </p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <span class="panel-eyebrow">Virtual Gifts</span>
+                            <h2 class="panel-title">Gift shop preview</h2>
+                            <p class="panel-subtitle">
+                                A cleaner premium section for monetization, emotional engagement, and future point conversion flows.
+                            </p>
+                        </div>
+                        <span class="panel-pill">Monetizable</span>
+                    </div>
+
+                    {% if gift_items %}
+                        <div class="gift-grid">
+                            {% for gift in gift_items[:4] %}
+                                <article class="gift-card">
+                                    <div class="gift-top">
+                                        <div class="gift-icon">{{ gift.icon if gift.icon is defined and gift.icon else "🎁" }}</div>
+                                        <div class="gift-price">{{ gift.price if gift.price is defined and gift.price else "$4.99" }}</div>
+                                    </div>
+                                    <h3 class="gift-name">{{ gift.name if gift.name is defined and gift.name else "Premium Gift" }}</h3>
+                                    <p class="gift-note">{{ gift.description if gift.description is defined and gift.description else "Gift-based engagement designed to increase emotional interaction and app monetization." }}</p>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="gift-grid">
+                            <article class="gift-card">
+                                <div class="gift-top">
+                                    <div class="gift-icon">🌹</div>
+                                    <div class="gift-price">$2.99</div>
+                                </div>
+                                <h3 class="gift-name">Luxury Rose</h3>
+                                <p class="gift-note">A brighter, premium-styled romantic gift to drive interaction and attention.</p>
+                            </article>
+
+                            <article class="gift-card">
+                                <div class="gift-top">
+                                    <div class="gift-icon">💎</div>
+                                    <div class="gift-price">$9.99</div>
+                                </div>
+                                <h3 class="gift-name">Diamond Spark</h3>
+                                <p class="gift-note">A high-visibility status gift designed for premium member attention.</p>
+                            </article>
+
+                            <article class="gift-card">
+                                <div class="gift-top">
+                                    <div class="gift-icon">🔥</div>
+                                    <div class="gift-price">$4.99</div>
+                                </div>
+                                <h3 class="gift-name">Hot Vibe Boost</h3>
+                                <p class="gift-note">Boost connection energy while supporting monetized engagement.</p>
+                            </article>
+
+                            <article class="gift-card">
+                                <div class="gift-top">
+                                    <div class="gift-icon">👑</div>
+                                    <div class="gift-price">$14.99</div>
+                                </div>
+                                <h3 class="gift-name">Crown Attention</h3>
+                                <p class="gift-note">A premium visual gift made for top-tier recognition and status.</p>
+                            </article>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+
+            <div class="dashboard-stack">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <span class="panel-eyebrow">Recent Messages</span>
+                            <h2 class="panel-title">Conversation pulse</h2>
+                            <p class="panel-subtitle">
+                                More attractive message preview cards with brighter spacing and faster scanning.
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if recent_messages %}
+                        <div class="mini-list">
+                            {% for message in recent_messages[:5] %}
+                                {% set sender_name = message.display_name if message.display_name is defined and message.display_name else (message.name if message.name is defined and message.name else "QRZ Member") %}
+                                {% set snippet = message.body if message.body is defined and message.body else (message.text if message.text is defined and message.text else "New conversation activity.") %}
+                                {% set stamp = message.time if message.time is defined and message.time else (message.created_at if message.created_at is defined and message.created_at else "Now") %}
+                                <div class="mini-item">
+                                    <div class="mini-avatar">{{ sender_name[:1]|upper }}</div>
+                                    <div class="mini-main">
+                                        <h3 class="mini-name">{{ sender_name }}</h3>
+                                        <div class="mini-sub">{{ snippet }}</div>
+                                    </div>
+                                    <div class="mini-side">
+                                        <span class="mini-chip">{{ stamp }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <h3>No messages yet</h3>
+                            <p>
+                                Your message preview area is fully styled for the new premium system and will stay visually synchronized with chat.
+                            </p>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <span class="panel-eyebrow">Spotlight</span>
+                            <h2 class="panel-title">Profiles with momentum</h2>
+                            <p class="panel-subtitle">
+                                Bright spotlight rows help create a more alive and active landing experience.
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if spotlight_profiles %}
+                        <div class="spotlight-grid">
+                            {% for item in spotlight_profiles[:5] %}
+                                {% set item_name = item.display_name if item.display_name is defined and item.display_name else (item.name if item.name is defined and item.name else "QRZ Member") %}
+                                {% set item_sub = item.city if item.city is defined and item.city else (item.note if item.note is defined and item.note else "High activity and strong profile energy") %}
+                                {% set item_score = item.score if item.score is defined and item.score else "91%" %}
+                                <div class="spotlight-card">
+                                    <div class="spotlight-orb">{{ item_name[:1]|upper }}</div>
+                                    <div>
+                                        <h3 class="spotlight-name">{{ item_name }}</h3>
+                                        <div class="spotlight-sub">{{ item_sub }}</div>
+                                    </div>
+                                    <div class="spotlight-score">{{ item_score }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="spotlight-grid">
+                            <div class="spotlight-card">
+                                <div class="spotlight-orb">A</div>
+                                <div>
+                                    <h3 class="spotlight-name">Ariana</h3>
+                                    <div class="spotlight-sub">Creative energy • Great chemistry potential</div>
+                                </div>
+                                <div class="spotlight-score">95%</div>
+                            </div>
+
+                            <div class="spotlight-card">
+                                <div class="spotlight-orb">J</div>
+                                <div>
+                                    <h3 class="spotlight-name">Julian</h3>
+                                    <div class="spotlight-sub">Professional vibe • Strong engagement momentum</div>
+                                </div>
+                                <div class="spotlight-score">93%</div>
+                            </div>
+
+                            <div class="spotlight-card">
+                                <div class="spotlight-orb">M</div>
+                                <div>
+                                    <h3 class="spotlight-name">Maya</h3>
+                                    <div class="spotlight-sub">Warm profile tone • High message response potential</div>
+                                </div>
+                                <div class="spotlight-score">94%</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <span class="panel-eyebrow">Visual Reset</span>
+                            <h2 class="panel-title">Landing page now aligned</h2>
+                            <p class="panel-subtitle">
+                                The dashboard now matches the darker premium background, the bigger logo, and the stronger 3D brand presentation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mini-list">
+                        <div class="mini-item">
+                            <div class="mini-avatar">✓</div>
+                            <div class="mini-main">
+                                <h3 class="mini-name">Brighter gradients</h3>
+                                <div class="mini-sub">More alive color motion without losing premium elegance.</div>
+                            </div>
+                        </div>
+
+                        <div class="mini-item">
+                            <div class="mini-avatar">✓</div>
+                            <div class="mini-main">
+                                <h3 class="mini-name">Darker cinematic depth</h3>
+                                <div class="mini-sub">Richer contrast and better pop for the brand, cards, and actions.</div>
+                            </div>
+                        </div>
+
+                        <div class="mini-item">
+                            <div class="mini-avatar">✓</div>
+                            <div class="mini-main">
+                                <h3 class="mini-name">Modern product hierarchy</h3>
+                                <div class="mini-sub">No newspaper/editorial feel — now a cleaner 2026 product-style experience.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}

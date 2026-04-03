@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .profile-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .profile-card-main {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(252,250,255,0.96) 100%);
+        border: 1px solid rgba(17, 24, 39, 0.05);
+        border-radius: 32px;
+        box-shadow:
+            0 18px 45px rgba(17, 24, 39, 0.08),
+            0 8px 20px rgba(255, 45, 85, 0.05);
+        overflow: hidden;
+    }
+
+    .profile-hero {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        min-height: 680px;
+    }
+
+    .profile-photo {
+        position: relative;
+        background:
+            linear-gradient(180deg, rgba(17,24,39,0.02) 0%, rgba(17,24,39,0.14) 48%, rgba(17,24,39,0.38) 100%),
+            url("https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80") center/cover no-repeat;
+        min-height: 680px;
+    }
+
+    .photo-topbar {
+        position: absolute;
+        top: 18px;
+        left: 18px;
+        right: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.18);
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 800;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.18);
+        box-shadow: 0 10px 18px rgba(17, 24, 39, 0.12);
+    }
+
+    .pill.online {
+        background: rgba(16, 185, 129, 0.22);
+    }
+
+    .pill.match {
+        background: linear-gradient(135deg, rgba(255,45,85,0.28), rgba(217,70,239,0.24));
+    }
+
+    .photo-bottom {
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .photo-name {
+        font-size: 2.45rem;
+        line-height: 1;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: #ffffff;
+        margin: 0;
+    }
+
+    .photo-name span {
+        font-weight: 700;
+        color: rgba(255,255,255,0.92);
+    }
+
+    .photo-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .photo-meta-item {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+        border: 1px solid rgba(255,255,255,0.14);
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+    }
+
+    .photo-description {
+        font-size: 1rem;
+        line-height: 1.75;
+        color: rgba(255,255,255,0.88);
+        max-width: 92%;
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 28px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,250,255,0.96) 100%);
+    }
+
+    .info-top {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .section-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        min-height: 34px;
+        padding: 0 13px;
+        border-radius: 999px;
+        background: rgba(255, 45, 85, 0.08);
+        color: #ff2d55;
+        font-size: 0.74rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+
+    .headline {
+        font-size: 1.75rem;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        font-weight: 900;
+        color: #111827;
+        margin: 0;
+    }
+
+    .body-text {
+        font-size: 0.98rem;
+        line-height: 1.78;
+        color: #5b6478;
+        margin: 0;
+    }
+
+    .compatibility-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .compatibility-item {
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid rgba(17, 24, 39, 0.05);
+        padding: 16px;
+        box-shadow: 0 8px 18px rgba(17, 24, 39, 0.04);
+    }
+
+    .compatibility-score {
+        font-size: 1.28rem;
+        line-height: 1;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .compatibility-title {
+        font-size: 0.84rem;
+        line-height: 1.45;
+        font-weight: 700;
+        color: #6b7280;
+    }
+
+    .action-stack {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+    }
+
+    .action-btn {
+        min-height: 54px;
+        border-radius: 18px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.96rem;
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .action-btn.pass {
+        background: #f4f6f8;
+        color: #667085;
+        border: 1px solid rgba(17, 24, 39, 0.06);
+    }
+
+    .action-btn.like {
+        background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(59,130,246,0.10));
+        color: #1d4ed8;
+        border: 1px solid rgba(37,99,235,0.12);
+    }
+
+    .action-btn.love {
+        background: linear-gradient(135deg, #ff2d55 0%, #ff4f87 42%, #ec4899 100%);
+        color: #ffffff;
+        box-shadow: 0 14px 28px rgba(255,45,85,0.18);
+    }
+
+    .action-btn.gift {
+        background: linear-gradient(135deg, rgba(217,70,239,0.12), rgba(124,58,237,0.10));
+        color: #a21caf;
+        border: 1px solid rgba(217,70,239,0.12);
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 20px;
+    }
+
+    .clean-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(251,252,255,0.96) 100%);
+        border: 1px solid rgba(17, 24, 39, 0.05);
+        border-radius: 28px;
+        padding: 26px;
+        box-shadow:
+            0 14px 30px rgba(17, 24, 39, 0.06),
+            0 8px 16px rgba(255, 45, 85, 0.04);
+    }
+
+    .interest-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .interest-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: #fff5f8;
+        border: 1px solid rgba(255, 45, 85, 0.08);
+        color: #4b5563;
+        font-size: 0.84rem;
+        font-weight: 800;
+    }
+
+    .profile-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .profile-list-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid rgba(17, 24, 39, 0.05);
+        box-shadow: 0 8px 16px rgba(17, 24, 39, 0.03);
+    }
+
+    .profile-list-label {
+        font-size: 0.80rem;
+        font-weight: 900;
+        color: #ff2d55;
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+    }
+
+    .profile-list-value {
+        font-size: 0.95rem;
+        line-height: 1.65;
+        color: #374151;
+        font-weight: 700;
+        text-align: right;
+        max-width: 70%;
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        min-height: 150px;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 12px 22px rgba(17, 24, 39, 0.08);
+    }
+
+    .gallery-item::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(17,24,39,0.03) 0%, rgba(17,24,39,0.20) 100%);
+    }
+
+    .gallery-item span {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 800;
+        z-index: 1;
+    }
+
+    @media (max-width: 1100px) {
+        .profile-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-photo,
+        .profile-hero {
+            min-height: auto;
+        }
+
+        .profile-photo {
+            min-height: 620px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .profile-photo {
+            min-height: 500px;
+        }
+
+        .compatibility-grid,
+        .action-stack,
+        .gallery-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-info,
+        .clean-card {
+            padding: 20px;
+        }
+
+        .photo-name {
+            font-size: 2rem;
+        }
+
+        .profile-list-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .profile-list-value {
+            text-align: left;
+            max-width: 100%;
+        }
+    }
+</style>
+
+<div class="profile-page">
+    <section class="profile-card-main">
+        <div class="profile-hero">
+            <div class="profile-photo">
+                <div class="photo-topbar">
+                    <div class="pill online">Online Now</div>
+                    <div class="pill match">96% Match</div>
+                </div>
+
+                <div class="photo-bottom">
+                    <h1 class="photo-name">Isabella <span>29</span></h1>
+
+                    <div class="photo-meta">
+                        <div class="photo-meta-item">Creative Director</div>
+                        <div class="photo-meta-item">4 miles away</div>
+                        <div class="photo-meta-item">Serious relationship</div>
+                    </div>
+
+                    <div class="photo-description">
+                        Thoughtful, affectionate, and emotionally mature. Enjoys elegant evenings, honest conversations, culture, and building a meaningful connection with the right person.
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-top">
+                    <div class="section-label">Profile Overview</div>
+
+                    <h2 class="headline">A clean, modern romantic profile with real compatibility.</h2>
+
+                    <p class="body-text">
+                        Isabella values sincerity, warmth, consistency, and genuine chemistry. She likes refined experiences, calm confidence, and people who know how to communicate with intention.
+                    </p>
+
+                    <div class="compatibility-grid">
+                        <div class="compatibility-item">
+                            <div class="compatibility-score">94%</div>
+                            <div class="compatibility-title">Career alignment</div>
+                        </div>
+                        <div class="compatibility-item">
+                            <div class="compatibility-score">91%</div>
+                            <div class="compatibility-title">Zodiac harmony</div>
+                        </div>
+                        <div class="compatibility-item">
+                            <div class="compatibility-score">97%</div>
+                            <div class="compatibility-title">Psychology fit</div>
+                        </div>
+                        <div class="compatibility-item">
+                            <div class="compatibility-score">98%</div>
+                            <div class="compatibility-title">Location match</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-stack">
+                    <button class="action-btn pass" type="button">Pass</button>
+                    <button class="action-btn like" type="button">Like</button>
+                    <button class="action-btn love" type="button">Love</button>
+                    <button class="action-btn gift" type="button">Send Gift</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="details-grid">
+        <div class="clean-card">
+            <div class="section-label">About Her</div>
+            <h2 class="headline">Elegant, warm, romantic, and emotionally grounded.</h2>
+            <p class="body-text">
+                Isabella enjoys deep conversations, modern culture, beautiful places, and emotionally healthy relationships. She prefers meaningful attention over games and likes connections that feel calm, attractive, and intentional.
+            </p>
+
+            <div class="interest-cloud">
+                <div class="interest-chip">Elegant dinners</div>
+                <div class="interest-chip">Travel weekends</div>
+                <div class="interest-chip">Art & culture</div>
+                <div class="interest-chip">Romantic energy</div>
+                <div class="interest-chip">Deep conversation</div>
+                <div class="interest-chip">Emotional maturity</div>
+                <div class="interest-chip">Quality time</div>
+                <div class="interest-chip">Serious commitment</div>
+            </div>
+
+            <div class="gallery-grid">
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80');">
+                    <span>Evening elegance</span>
+                </div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80');">
+                    <span>Creative lifestyle</span>
+                </div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1496449903678-68ddcb189a24?auto=format&fit=crop&w=900&q=80');">
+                    <span>Travel and culture</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="clean-card">
+            <div class="section-label">Details</div>
+            <h2 class="headline">Simple, clear, and trustworthy.</h2>
+            <p class="body-text">
+                A cleaner Tinder-inspired profile layout makes the most important details easier to read and more visually attractive.
+            </p>
+
+            <div class="profile-list">
+                <div class="profile-list-item">
+                    <div class="profile-list-label">Profession</div>
+                    <div class="profile-list-value">Creative Director</div>
+                </div>
+
+                <div class="profile-list-item">
+                    <div class="profile-list-label">Education</div>
+                    <div class="profile-list-value">Master’s Degree</div>
+                </div>
+
+                <div class="profile-list-item">
+                    <div class="profile-list-label">Relationship Goal</div>
+                    <div class="profile-list-value">Serious and intentional relationship</div>
+                </div>
+
+                <div class="profile-list-item">
+                    <div class="profile-list-label">Love Language</div>
+                    <div class="profile-list-value">Quality time and thoughtful affection</div>
+                </div>
+
+                <div class="profile-list-item">
+                    <div class="profile-list-label">Lifestyle</div>
+                    <div class="profile-list-value">Balanced, elegant, warm, socially refined</div>
+                </div>
+
+                <div class="profile-list-item">
+                    <div class="profile-list-label">Availability</div>
+                    <div class="profile-list-value">Open to premium chats and private video dates</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

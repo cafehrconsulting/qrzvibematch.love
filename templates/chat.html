@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .chat-shell {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 22px;
+        min-height: 760px;
+    }
+
+    .chat-sidebar,
+    .chat-main {
+        border-radius: 32px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,250,255,0.96) 100%);
+        border: 1px solid rgba(255,255,255,0.88);
+        box-shadow: 0 20px 42px rgba(14, 23, 40, 0.10);
+    }
+
+    .chat-sidebar {
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        background:
+            radial-gradient(circle at top right, rgba(255, 47, 109, 0.14), transparent 24%),
+            linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,243,255,0.96) 100%);
+    }
+
+    .sidebar-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        min-height: 36px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255, 47, 109, 0.10), rgba(217, 70, 239, 0.10), rgba(59, 130, 246, 0.10));
+        color: #ff2f6d;
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .sidebar-title {
+        font-size: 1.8rem;
+        line-height: 1;
+        letter-spacing: -0.05em;
+        font-weight: 900;
+        color: #101828;
+        margin: 0;
+    }
+
+    .sidebar-text {
+        font-size: 0.95rem;
+        line-height: 1.72;
+        color: #5f6c86;
+        margin: 0;
+    }
+
+    .search-wrap input {
+        width: 100%;
+        min-height: 52px;
+        border-radius: 18px;
+        border: 1px solid rgba(14, 23, 40, 0.06);
+        background: rgba(255,255,255,0.90);
+        padding: 0 16px;
+        font-size: 0.95rem;
+        color: #101828;
+        outline: none;
+        box-shadow: 0 10px 18px rgba(14, 23, 40, 0.05);
+    }
+
+    .search-wrap input:focus {
+        border-color: rgba(255, 47, 109, 0.18);
+        box-shadow: 0 0 0 4px rgba(255, 47, 109, 0.08);
+    }
+
+    .chat-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .chat-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(255,255,255,0.94);
+        box-shadow: 0 12px 22px rgba(14, 23, 40, 0.06);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .chat-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 30px rgba(14, 23, 40, 0.08);
+    }
+
+    .chat-item.active {
+        background: linear-gradient(135deg, rgba(255, 47, 109, 0.10), rgba(217, 70, 239, 0.10), rgba(59, 130, 246, 0.10));
+        border: 1px solid rgba(255, 47, 109, 0.10);
+    }
+
+    .avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #ff2f6d 0%, #d946ef 55%, #3b82f6 100%);
+        color: #ffffff;
+        font-size: 0.86rem;
+        font-weight: 900;
+        box-shadow: 0 14px 24px rgba(255, 47, 109, 0.18);
+        flex-shrink: 0;
+    }
+
+    .chat-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .chat-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+    .chat-name {
+        font-size: 0.98rem;
+        font-weight: 900;
+        color: #101828;
+        letter-spacing: -0.02em;
+    }
+
+    .chat-status {
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .chat-status.online {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
+    }
+
+    .chat-status.new {
+        background: rgba(255, 47, 109, 0.12);
+        color: #e11d48;
+    }
+
+    .chat-status.private {
+        background: rgba(59, 130, 246, 0.12);
+        color: #2563eb;
+    }
+
+    .chat-preview {
+        font-size: 0.92rem;
+        line-height: 1.68;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-main {
+        display: flex;
+        flex-direction: column;
+        background:
+            radial-gradient(circle at top right, rgba(255, 47, 109, 0.14), transparent 20%),
+            radial-gradient(circle at bottom left, rgba(34, 211, 238, 0.12), transparent 18%),
+            linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,249,255,0.96) 100%);
+    }
+
+    .chat-main-header {
+        padding: 22px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        border-bottom: 1px solid rgba(14, 23, 40, 0.05);
+        background: rgba(255,255,255,0.64);
+        backdrop-filter: blur(10px);
+    }
+
+    .header-user {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .header-user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .header-user-name {
+        font-size: 1.08rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: #101828;
+    }
+
+    .header-user-sub {
+        font-size: 0.88rem;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .header-btn {
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(14, 23, 40, 0.06);
+        background: rgba(255,255,255,0.92);
+        color: #22324c;
+        font-size: 0.84rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        box-shadow: 0 10px 18px rgba(14, 23, 40, 0.05);
+    }
+
+    .header-btn.primary {
+        background: linear-gradient(135deg, #ff2f6d 0%, #ff4f87 24%, #d946ef 70%, #3b82f6 100%);
+        color: #ffffff;
+        border: none;
+    }
+
+    .messages-area {
+        flex: 1;
+        padding: 26px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+    }
+
+    .message-row {
+        display: flex;
+    }
+
+    .message-row.left {
+        justify-content: flex-start;
+    }
+
+    .message-row.right {
+        justify-content: flex-end;
+    }
+
+    .message-box {
+        max-width: 72%;
+        padding: 16px 18px;
+        border-radius: 24px;
+        font-size: 0.95rem;
+        line-height: 1.76;
+        box-shadow: 0 12px 22px rgba(14, 23, 40, 0.05);
+    }
+
+    .message-row.left .message-box {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.10), rgba(34, 211, 238, 0.10));
+        border: 1px solid rgba(59, 130, 246, 0.10);
+        color: #31415d;
+    }
+
+    .message-row.right .message-box {
+        background: linear-gradient(135deg, rgba(255, 47, 109, 0.12), rgba(217, 70, 239, 0.10));
+        border: 1px solid rgba(255, 47, 109, 0.10);
+        color: #27364f;
+    }
+
+    .message-time {
+        margin-top: 6px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #94a3b8;
+    }
+
+    .composer {
+        padding: 20px 24px 24px 24px;
+        border-top: 1px solid rgba(14, 23, 40, 0.05);
+        background: rgba(255,255,255,0.72);
+        backdrop-filter: blur(10px);
+    }
+
+    .composer-grid {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .composer-grid input {
+        width: 100%;
+        min-height: 56px;
+        border-radius: 20px;
+        border: 1px solid rgba(14, 23, 40, 0.06);
+        background: rgba(255,255,255,0.94);
+        padding: 0 18px;
+        font-size: 0.95rem;
+        color: #101828;
+        outline: none;
+        box-shadow: 0 12px 20px rgba(14, 23, 40, 0.05);
+    }
+
+    .composer-grid input:focus {
+        border-color: rgba(255, 47, 109, 0.18);
+        box-shadow: 0 0 0 4px rgba(255, 47, 109, 0.08);
+    }
+
+    .composer-btn {
+        min-height: 56px;
+        padding: 0 18px;
+        border-radius: 18px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.92rem;
+        font-weight: 900;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .composer-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .composer-btn.secondary {
+        background: rgba(255,255,255,0.94);
+        color: #22324c;
+        border: 1px solid rgba(14, 23, 40, 0.06);
+        box-shadow: 0 10px 18px rgba(14, 23, 40, 0.05);
+    }
+
+    .composer-btn.primary {
+        background: linear-gradient(135deg, #ff2f6d 0%, #ff4f87 24%, #d946ef 70%, #3b82f6 100%);
+        color: #ffffff;
+        box-shadow: 0 16px 28px rgba(255, 47, 109, 0.18);
+    }
+
+    @media (max-width: 1100px) {
+        .chat-shell {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 760px) {
+        .composer-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .message-box {
+            max-width: 90%;
+        }
+
+        .chat-main-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="chat-shell">
+    <aside class="chat-sidebar">
+        <div class="sidebar-chip">Premium Messages</div>
+        <h1 class="sidebar-title">Messages</h1>
+        <p class="sidebar-text">
+            A more dynamic and modern conversation space with brighter visuals, cleaner hierarchy, and stronger app-style energy.
+        </p>
+
+        <div class="search-wrap">
+            <input type="text" placeholder="Search conversations">
+        </div>
+
+        <div class="chat-list">
+            <div class="chat-item active">
+                <div class="avatar">S</div>
+                <div class="chat-info">
+                    <div class="chat-topline">
+                        <div class="chat-name">Sophia</div>
+                        <div class="chat-status online">Online</div>
+                    </div>
+                    <div class="chat-preview">I liked your profile. You seem genuine and well grounded.</div>
+                </div>
+            </div>
+
+            <div class="chat-item">
+                <div class="avatar">C</div>
+                <div class="chat-info">
+                    <div class="chat-topline">
+                        <div class="chat-name">Camila</div>
+                        <div class="chat-status new">New</div>
+                    </div>
+                    <div class="chat-preview">Thank you for the gift. I would love to keep talking.</div>
+                </div>
+            </div>
+
+            <div class="chat-item">
+                <div class="avatar">E</div>
+                <div class="chat-info">
+                    <div class="chat-topline">
+                        <div class="chat-name">Elena</div>
+                        <div class="chat-status private">Private</div>
+                    </div>
+                    <div class="chat-preview">Would you like to schedule a private premium video date later this evening?</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <section class="chat-main">
+        <div class="chat-main-header">
+            <div class="header-user">
+                <div class="avatar">S</div>
+                <div class="header-user-info">
+                    <div class="header-user-name">Sophia</div>
+                    <div class="header-user-sub">Online • Premium conversation</div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <a href="{{ url_for('profile') }}" class="header-btn">View Profile</a>
+                <a href="{{ url_for('chat') }}" class="header-btn">Send Gift</a>
+                <a href="{{ url_for('chat') }}" class="header-btn primary">Video Date</a>
+            </div>
+        </div>
+
+        <div class="messages-area">
+            <div class="message-row left">
+                <div class="message-box">
+                    I really liked your energy. You seem genuine and elegant.
+                    <div class="message-time">Sophia • 9:02 AM</div>
+                </div>
+            </div>
+
+            <div class="message-row right">
+                <div class="message-box">
+                    Thank you. I appreciate meaningful conversations and real chemistry.
+                    <div class="message-time">You • 9:04 AM</div>
+                </div>
+            </div>
+
+            <div class="message-row left">
+                <div class="message-box">
+                    That’s exactly what I’m looking for too. I prefer something intentional, not superficial.
+                    <div class="message-time">Sophia • 9:07 AM</div>
+                </div>
+            </div>
+
+            <div class="message-row right">
+                <div class="message-box">
+                    I like that. A clean connection with honesty, attraction, and consistency feels much better.
+                    <div class="message-time">You • 9:10 AM</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="composer">
+            <div class="composer-grid">
+                <input type="text" placeholder="Write a message...">
+                <button class="composer-btn secondary" type="button">Gift</button>
+                <button class="composer-btn primary" type="button">Send</button>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
